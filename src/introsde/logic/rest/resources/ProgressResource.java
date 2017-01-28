@@ -25,6 +25,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import introsde.logic.rest.model.Progress;
+import introsde.logic.rest.rules.Algorithms;
 
 
 /***
@@ -66,12 +67,14 @@ public class ProgressResource {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	@Path("/1/goal/progress")
+	@Path("/{id}/goal/progress")
 	public List<Progress> getProgress(
-			@PathParam("id") Long id/*,
-			@QueryParam("title") String title*/) {
+			@PathParam("id") int id
+		) {
+		Algorithms logic = null;
 		Progress progress = null;
 		List<Progress> pList = null;
+		List<String> goalsList = null;
 		
 		// Send the request and get the relative response
 		Response response = webTarget.request().accept(MediaType.APPLICATION_JSON).get(Response.class);
@@ -79,29 +82,22 @@ public class ProgressResource {
 		
 		if (statusCode==200) {
 			try {
-		
-				pList = new ArrayList<>();
-				progress = new Progress();
-				progress.setName("abc");
-				progress.setStatus("yes");
-				pList.add(progress);
-				progress = new Progress();
-				progress.setName("abc");
-				progress.setStatus("yes");
-				pList.add(progress);
+				logic = new Algorithms();
+				pList = new ArrayList<Progress>();
+				goalsList = logic.getGoalNames(id);
+				
+				for (int i=0; i<goalsList.size(); i++) {
+					progress = new Progress();
+					progress.setName(goalsList.get(i));
+					progress.setStatus(String.valueOf(logic.isOnTheTrack(id, goalsList.get(i))));
+					pList.add(progress);
+				}
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
 		} else {
 			throw new WebApplicationException(statusCode);
 		}
-		
-		/* per tutti gli obiettivi
-		 * 		prendi il nome
-		 * 		bool = chiama is on the track (che chiama quello che gli serve)
-		 * 		setta nome e status
-		 * 		aggiungi alla lista
-		 */
 		
 		return pList;
 	}
