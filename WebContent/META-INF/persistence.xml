@@ -2,7 +2,7 @@
 
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
 	<!-- XML element that identifies the persistence unit when instantiating an EntityManagerFactory -->
-	<persistence-unit name="storage-data-service">
+	<persistence-unit name="business-logic-service">
 		<!-- List of managed persistable classes -->
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<!-- List of general properties -->

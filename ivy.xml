@@ -20,7 +20,7 @@
        
     <info
         organisation="introsde"
-        module="storage-data-service"
+        module="business-logic-service"
         status="integration">
 	</info>
 	

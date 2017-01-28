@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="storage-data-service" default="install" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="business-logic-service" default="install" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
 
 	<!-- PART 1: Ivy properties, download, installation and configuration -->
 	<property name="ivy.install.version" value="2.4.0-rc1" />
@@ -80,7 +80,7 @@
 	
 	<target name="execute.server" depends="install">
 		<echo message="Executing the server Application..." />
-		<java classname="introsde.storage.rest.Application" classpath="${build.dir}" fork="true">
+		<java classname="introsde.logic.rest.Application" classpath="${build.dir}" fork="true">
 			<arg value="$JAVA_OPTS  -cp" />
 			<classpath>
 				<path location="build" />
@@ -93,7 +93,7 @@
 	</target>
 	
 	<target name="create.war" depends="install">
-		<war destfile="storage_data_service.war" webxml="${web.dir}/WebContent/WEB-INF/web.xml">
+		<war destfile="business_logic_service.war" webxml="${web.dir}/WebContent/WEB-INF/web.xml">
 			<fileset dir="${web.dir}/WebContent">
 				<include name="**/*.*"/>
 			</fileset>
@@ -104,9 +104,9 @@
 	<target name="deploy.heroku.server" depends="create.war">
 		<exec executable="heroku">
 			<arg value="war:deploy"/>
-			<arg value="storage_data_service.war"/>
+			<arg value="business_logic_service.war"/>
 			<arg value="--app"/>
-			<arg value="storage-data-service-ar"/>
+			<arg value="business-logic-service-ar"/>
 		</exec>
 	</target>
 </project>
