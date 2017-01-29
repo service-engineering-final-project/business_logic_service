@@ -1,6 +1,10 @@
 package introsde.logic.rest.rules;
 
+import java.awt.geom.Point2D;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
@@ -144,6 +148,66 @@ public class Algorithms {
 	}
 	
 	/***
+	 * A function that takes the last measurement date relative to a particular goal
+	 * @param id: the person's identifier
+	 * @param goalName: the name of the goal
+	 * @return the last measurement date relative to that very goal
+	 */
+	public String getActualGoalTime(int id, String goalName) {
+		String actualDate = null;
+		
+		Response response = webTarget.path("person").path(String.valueOf(id)).path(goalName)
+				.request().accept(MediaType.APPLICATION_JSON).get(Response.class);
+		int statusCode = response.getStatus();
+		
+		if (statusCode==200) {
+			try {
+				JsonNode root = mapper.readTree(response.readEntity(String.class));
+				
+				actualDate = root.get(root.size()-1).path("created").asText();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			throw new WebApplicationException(statusCode);
+		}
+		
+		return actualDate;
+	}
+	
+	/***
+	 * A function that gets the deadline/created relative to a particular goal
+	 * @param id: the person's identifier
+	 * @param time: the kind of time we are looking for
+	 * @return the parsed time
+	 */
+	public String getGoalTime(int id, String time) {
+		String timeValue = null;
+		
+		Response response = webTarget.path("person").path(String.valueOf(id)).path("goal")
+				.request().accept(MediaType.APPLICATION_JSON).get(Response.class);
+		int statusCode = response.getStatus();
+		
+		if (statusCode==200) {
+			try {
+				JsonNode root = mapper.readTree(response.readEntity(String.class));
+				
+				for (int i=0; i<root.size(); i++) {
+					if (root.get(i).path("title").asText().equals("weight")) {
+						timeValue = root.get(i).path(time).asText();
+					}
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			throw new WebApplicationException(statusCode);
+		}
+		
+		return timeValue;
+	}
+	
+	/***
 	 * A function that stores on a list all the goals supported by the system in order to process
 	 * them correctly.
 	 * @param id: the person's identifier
@@ -226,40 +290,92 @@ public class Algorithms {
 				isOnTheTrack = true;
 			}
 		} else if (goalName.equals("weight")) {
-			isOnTheTrack = computeWeightTrend(goalName);
+			isOnTheTrack = computeWeightTrend(id);
+			if (isOnTheTrack) {
+				System.out.println("\tGood job!");
+			}
 		} else {
 			System.out.println("There is no business logic for that goal!");
 		}
 		
-		// è in linea con quanto stabilito
 		return isOnTheTrack;
 	}
 	
-	public boolean computeWeightTrend(String goalName) {
+	/***
+	 * A function that determines if the weight measure value is on the right track.
+	 * @param id: the person's identifier
+	 * @return a boolean value that indicates the status
+	 */
+	public boolean computeWeightTrend(int id) {
 		boolean isOnTheTrack = false;
-		List<Double> weightList = new ArrayList<>();
+		double startTime = 0;
+		double endTime = 0;
+		double currentTime = 0;
+		Point2D.Double start = null;
+		Point2D.Double end = null;
+		Point2D.Double actual = null;
 		
-		double initValue = this.getInitGoalValue(1, goalName);
-		double finalValue = this.getFinalGoalValue(1, goalName);
-		double slope = 0;
+		Response response = webTarget.path("person").path(String.valueOf(id)).path("weight")
+				.request().accept(MediaType.APPLICATION_JSON).get(Response.class);
+		int statusCode = response.getStatus();
 		
-		// compute the slope using the weightList
-		
-		if(slope==0) {
-			// se lo slope intercetta x prima della x del final value, yo!
+		if (statusCode==200) {
+			try {
+				String created = getGoalTime(id, "created");
+				String deadline = getGoalTime(id, "deadline");
+				
+				endTime = (double) getTimePointDifference(created, deadline);
+				currentTime = getTimePointDifference(created, this.getActualGoalTime(id, "weight"));
+				
+				start = new Point2D.Double(startTime, getInitGoalValue(id, "weight"));
+				end = new Point2D.Double(endTime, getFinalGoalValue(id, "weight"));
+				actual = new Point2D.Double(currentTime, getActualGoalValue(id, "weight"));
+				
+				isOnTheTrack = isBelowTheLine(start, end, actual);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			throw new WebApplicationException(statusCode);
 		}
 		
-		// è in linea?
 		return isOnTheTrack;
 	}
 	
-	public boolean computeGeneralTrend(int goalsNumber, int goalsOnTheTrack) {
-		boolean isOnTheTrack = false;
+	/***
+	 * A function that determines in terms of determinants and cross products if a point
+	 * lies on the bottom part of a given segment.
+	 * @param a: the starting point of the segment
+	 * @param b: the ending point of the segment
+	 * @param c: the test point
+	 * @return a boolean value that indicates if the point falls below the segment
+	 */
+	public boolean isBelowTheLine(Point2D.Double a,Point2D.Double b, Point2D.Double c) {
+		System.out.println(a + " " + b + " " + c);
 		
-		if (goalsOnTheTrack>=(goalsNumber/2)) {
-			isOnTheTrack = true;
-		}
+		return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0.0;
+	}
+	
+	/***
+	 * A function that computes the difference between two dates in terms of days.
+	 * @param created: the start date
+	 * @param deadline: the end date
+	 * @return the difference between input dates in terms of days
+	 * @throws ParseException if an error in parsing occours
+	 */
+	public Long getTimePointDifference(String created, String deadline) throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+		Long daysInBetween = (long) -1;
 		
-		return isOnTheTrack;
+		Date dateStart = sdf.parse(created);
+	    Date dateEnd = sdf.parse(deadline);
+
+	    daysInBetween = Math.round((dateEnd.getTime()-dateStart.getTime()) / (double) 86400000);
+	    
+	    if (daysInBetween<0) {
+	    	System.out.println("\tWARNING! The deadline is before the creation date!");
+	    }
+		
+		return Math.abs(daysInBetween);
 	}
 }
