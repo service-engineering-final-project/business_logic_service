@@ -61,9 +61,9 @@ public class ProgressResource {
 	}
 	
 	/***
-	 * A method that gives all the information of a person identified by {id}.
+	 * A method that gives the status for each supported goal.
 	 * @param id: the identifier
-	 * @return the person identified by {id}
+	 * @return a list of statuses representing the achievement of goals
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -89,7 +89,8 @@ public class ProgressResource {
 				for (int i=0; i<goalsList.size(); i++) {
 					progress = new Progress();
 					progress.setName(goalsList.get(i));
-					progress.setStatus(String.valueOf(logic.isOnTheTrack(id, goalsList.get(i))));
+					progress.setProgress(String.valueOf(logic.isOnTheTrack(id, goalsList.get(i))));
+					progress.setStatus(String.valueOf(logic.isAchieved(id, goalsList.get(i))));
 					pList.add(progress);
 				}
 			} catch(Exception e) {

@@ -247,6 +247,45 @@ public class Algorithms {
 	}
 	
 	/***
+	 * A function that checks if the person achieved that particular goal
+	 * @param id: the person's identifier
+	 * @param goalName: the name of the goal
+	 * @return a boolean value that indicates if the goal is achieved
+	 */
+	public boolean isAchieved(int id, String goalName) {
+		boolean isAchieved = false;
+		
+		double actualValue = getActualGoalValue(id, goalName);
+		double targetValue = getFinalGoalValue(id, goalName);
+		
+		if (goalName.equals("sodium")||goalName.equals("weight")) {
+			if (actualValue<=targetValue) {
+				isAchieved = true;
+			}
+		} else if (goalName.equals("steps")) {
+			if (actualValue>=targetValue) {
+				isAchieved = true;
+			}
+		} else if (goalName.equals("sleep_hours")) {
+			if ((actualValue>=6)&&(actualValue<=targetValue)) {
+				isAchieved = true;
+			}
+		} else if (goalName.equals("proteins")||goalName.equals("carbohydrates")||
+				goalName.equals("lipids")||goalName.equals("calories")) {
+			double targetValueMinRange = targetValue - (targetValue*10.0)/100.0;
+			double targetValueMaxRange = targetValue + (targetValue*10.0)/100.0;
+
+			if ((actualValue>=targetValueMinRange)&&(actualValue<=targetValueMaxRange)) {
+				isAchieved = true;
+			}
+		} else {
+			System.out.println("There is no business logic for that goal!");
+		}
+		
+		return isAchieved;
+	}
+	
+	/***
 	 * A function that checks if the person is on the track with that particular goal
 	 * @param id: the person's identifier
 	 * @param goalName: the name of the goal

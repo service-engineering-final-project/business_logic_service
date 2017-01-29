@@ -26,6 +26,7 @@ public class Progress implements Serializable {
 	 ********************************************************************************/
 	
 	@XmlElement private String name;
+	@XmlElement private String progress;
 	@XmlElement private String status;
 	
 	
@@ -34,6 +35,12 @@ public class Progress implements Serializable {
 	 */
 	public String getName() {
 		return name;
+	}
+	/**
+	 * @return the progress
+	 */
+	public String getProgress() {
+		return progress;
 	}
 	/**
 	 * @return the status
@@ -46,6 +53,12 @@ public class Progress implements Serializable {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+	/**
+	 * @param progress the progress to set
+	 */
+	public void setProgress(String progress) {
+		this.progress = progress;
 	}
 	/**
 	 * @param status the status to set
